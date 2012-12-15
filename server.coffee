@@ -23,8 +23,8 @@ app.configure( ->
 
 	# # Middleware
 	# app.use express.static(__dirname + '/public')
-	# app.use express.bodyParser()
-	# app.use(express.cookieParser())	# required by everyAuth
+	app.use express.bodyParser()
+	app.use(express.cookieParser())	# required by everyAuth
 	# app.use(express.session({ secret: 'nexus'})) # required by everyAuth
 	# app.use everyAuth.middleware()
 	# app.use(singlePage({indexPage: 'views/index.html'}))
