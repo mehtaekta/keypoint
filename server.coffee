@@ -9,20 +9,20 @@ _ = require 'underscore'
 
 # googleAuthen.authenticate()
 
-app = module.exports = express.createServer()
+app = express()
 app.configure( ->
 	# singlePage = require './middleware/nexus_single_page'
 
 	# # Register view engine
-	# app.register('.html', require('ejs'));
+	app.engine('.html', require('ejs').renderFile);
 
 	# # App Configuration
-	# app.set 'views', __dirname + "/public/"
-	# app.set 'view engine', 'ejs'
-	# app.set 'view options', { layout: false, pretty: true }
+	app.set 'views', __dirname + "/public/"
+	app.set 'view engine', 'ejs'
+	app.set 'view options', { layout: false, pretty: true }
 
 	# # Middleware
-	# app.use express.static(__dirname + '/public')
+	app.use express.static(__dirname + '/public')
 	app.use express.bodyParser()
 	app.use(express.cookieParser())	# required by everyAuth
 	# app.use(express.session({ secret: 'nexus'})) # required by everyAuth
@@ -30,6 +30,9 @@ app.configure( ->
 	# app.use(singlePage({indexPage: 'views/index.html'}))
 	
 )
+
+app.get '/index.html#/', (req, res, next) ->
+	res.render('index')
 
 port = process.env.PORT or 5000
 app.listen port
