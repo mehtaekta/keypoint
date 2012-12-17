@@ -3,18 +3,27 @@ module.exports = function(grunt){
 	// Load tasks from plugin
 	grunt.loadNpmTasks('grunt-coffee');
 	 // grunt.loadNpmTasks('grunt-growl');
-	 grunt.loadTasks('tasks')
+	 grunt.loadTasks('tasks');
+	 grunt.loadNpmTasks('grunt-reload');
 
 	// Project configuration.
 	grunt.initConfig({
-		server: {
-		    port: 500,
-		    base: './keypoint'
-		},
+		// server: {
+		//     port: 5000,
+		//     base: './server'
+		// },
+		// reload: {
+		//     port: 5000,
+		//     host: 'localhost'
+		//     // proxy: {
+	 //     //        host: 'localhost',
+	 //     //        port:5000,
+	 //     //    }
+		// },
 		coffee: {
 	      	app: {
 	        	src: '**/*.coffee',
-	        	// dest: 'lib/',
+	        	dest: 'lib/',
 		        options: {
 		        	output: false,
 		            bare: false,
@@ -56,25 +65,29 @@ module.exports = function(grunt){
 	    watch: {
 		    coffee: {
 		        files: '<config:coffee.app.src>',
-		        tasks: 'coffee'
+		        tasks: ['coffee']
 		        // tasks: 'coffee:app growl'
 		    }			
 	    	,less: {
 				files: '<config:less.app.src>',
-				tasks: 'less'
+				tasks: ['less']
 			// tasks: 'coffee:app growl'
+			},
+			min: {
+				files: '<config:concat.dist.src>',
+				tasks: ['concat', 'min']
 			}
 		},
 		uglify: {}
 	});
 
-    // Register task.
-    grunt.registerTask('server', 'Start coffee-express web server.', function() {
-		// grunt.log.writeln('Starting web server on port 5000.');
-		require('./server.js');
-	});
+ //    // Register task.
+ //    grunt.registerTask('server', 'Start coffee-express web server.', function() {
+	// 	// grunt.log.writeln('Starting web server on port 5000.');
+	// 	require('./server');
+	// });
 
-    grunt.registerTask('default', ['coffee', 'less', 'concat', 'min', 'server', 'watch']);
+    grunt.registerTask('default', ['coffee', 'less', 'concat', 'min', 'watch']);
     // grunt.registerTask('coffeeCompile', 'coffee');
     // grunt.registerTask('lessCompile', 'less');
 

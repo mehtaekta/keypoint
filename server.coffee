@@ -12,12 +12,12 @@ _ = require 'underscore'
 app = express()
 app.configure( ->
 	# singlePage = require './middleware/nexus_single_page'
-
+	console.log 'config test log'
 	# # Register view engine
 	app.engine('.html', require('ejs').renderFile);
 
 	# # App Configuration
-	app.set 'views', __dirname + "/public/"
+	app.set 'views', __dirname + "/public/template"
 	app.set 'view engine', 'ejs'
 	app.set 'view options', { layout: false, pretty: true }
 
@@ -27,12 +27,19 @@ app.configure( ->
 	app.use(express.cookieParser())	# required by everyAuth
 	# app.use(express.session({ secret: 'nexus'})) # required by everyAuth
 	# app.use everyAuth.middleware()
-	# app.use(singlePage({indexPage: 'views/index.html'}))
+	# app.use app.router
+	app.use((req, res, next) ->
+		if (req.headers['content-type'] and req.headers['content-type'].indexOf('application/json') > -1) or (req.headers['accept'] and req.headers['accept'].indexOf('application/json') > -1)
+			next()
+		else
+			res.render('index.html')
+	)
 	
 )
 
-app.get '/index.html#/', (req, res, next) ->
-	res.render('index')
+app.get '/:action?', (req, res, next) ->
+	console.log('test log', req.params.action)
+	json.send({})
 
 port = process.env.PORT or 5000
 app.listen port

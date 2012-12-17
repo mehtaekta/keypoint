@@ -41,17 +41,21 @@
 
 
 (function($){
-	console.log('message');
-	var app = $.sammy("#main", function(){
+	// console.log('message');
+	var app = $.sammy("#main", function() {
 		// this.element_selector= "#main"; // Alternate way to define element selector
 
-		this.get('#/', function(context){
+		this.get('#/', function(context) {
 			context.log('ya ya ya');
-			 context.render('templates/index', {})
-                 .appendTo(context.$element());
-        	});
+			this.load('/logon')
+				.then(function(items) {
+					 context.render('templates/index', items)
+					 	.appendTo(context.$element());
+			});
+				
+        });
 
-		});
+	});
 
 	$(function(){
 		console.log('DOM Ready!!!!!!!!!!!');
