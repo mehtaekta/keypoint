@@ -14,6 +14,374 @@
 // Sammy.js / http://sammyjs.org
 (function(e,t){(function(n){typeof define=="function"&&define.amd?define(["jquery"],n):e.sammy=t.Sammy=n(e)})(function(e){var n,r="([^/]+)",i=/:([\w\d]+)/g,s=/\?([^#]*)?$/,o=function(e){return Array.prototype.slice.call(e)},u=function(e){return Object.prototype.toString.call(e)==="[object Function]"},a=function(e){return Object.prototype.toString.call(e)==="[object Array]"},f=function(e){return Object.prototype.toString.call(e)==="[object RegExp]"},l=function(e){return decodeURIComponent((e||"").replace(/\+/g," "))},c=encodeURIComponent,h=function(e){return String(e).replace(/&(?!\w+;)/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")},p=function(e){return function(t,n){return this.route.apply(this,[e,t,n])}},d={},v=!!t.history&&!!history.pushState,m=[];return n=function(){var t=o(arguments),r,i;n.apps=n.apps||{};if(t.length===0||t[0]&&u(t[0]))return n.apply(n,["body"].concat(t));if(typeof (i=t.shift())=="string")return r=n.apps[i]||new n.Application,r.element_selector=i,t.length>0&&e.each(t,function(e,t){r.use(t)}),r.element_selector!=i&&delete n.apps[i],n.apps[r.element_selector]=r,r},n.VERSION="0.7.2",n.addLogger=function(e){m.push(e)},n.log=function(){var t=o(arguments);t.unshift("["+Date()+"]"),e.each(m,function(e,r){r.apply(n,t)})},typeof t.console!="undefined"?u(t.console.log.apply)?n.addLogger(function(){t.console.log.apply(t.console,arguments)}):n.addLogger(function(){t.console.log(arguments)}):typeof console!="undefined"&&n.addLogger(function(){console.log.apply(console,arguments)}),e.extend(n,{makeArray:o,isFunction:u,isArray:a}),n.Object=function(t){return e.extend(this,t||{})},e.extend(n.Object.prototype,{escapeHTML:h,h:h,toHash:function(){var t={};return e.each(this,function(e,n){u(n)||(t[e]=n)}),t},toHTML:function(){var t="";return e.each(this,function(e,n){u(n)||(t+="<strong>"+e+"</strong> "+n+"<br />")}),t},keys:function(e){var t=[];for(var n in this)(!u(this[n])||!e)&&t.push(n);return t},has:function(t){return this[t]&&e.trim(this[t].toString())!==""},join:function(){var e=o(arguments),t=e.shift();return e.join(t)},log:function(){n.log.apply(n,arguments)},toString:function(t){var n=[];return e.each(this,function(e,r){(!u(r)||t)&&n.push('"'+e+'": '+r.toString())}),"Sammy.Object: {"+n.join(",")+"}"}}),n.DefaultLocationProxy=function(e,t){this.app=e,this.is_native=!1,this.has_history=v,this._startPolling(t)},n.DefaultLocationProxy.fullPath=function(e){var t=e.toString().match(/^[^#]*(#.+)$/),n=t?t[1]:"";return[e.pathname,e.search,n].join("")},e.extend(n.DefaultLocationProxy.prototype,{bind:function(){var r=this,i=this.app,s=n.DefaultLocationProxy;e(t).bind("hashchange."+this.app.eventNamespace(),function(e,n){r.is_native===!1&&!n&&(r.is_native=!0,t.clearInterval(s._interval)),i.trigger("location-changed")}),v&&!i.disable_push_state&&(e(t).bind("popstate."+this.app.eventNamespace(),function(e){i.trigger("location-changed")}),e("a").live("click.history-"+this.app.eventNamespace(),function(e){if(e.isDefaultPrevented()||e.metaKey||e.ctrlKey)return;var n=s.fullPath(this);if(this.hostname==t.location.hostname&&i.lookupRoute("get",n)&&this.target!=="_blank")return e.preventDefault(),r.setLocation(n),!1})),s._bindings||(s._bindings=0),s._bindings++},unbind:function(){e(t).unbind("hashchange."+this.app.eventNamespace()),e(t).unbind("popstate."+this.app.eventNamespace()),e("a").die("click.history-"+this.app.eventNamespace()),n.DefaultLocationProxy._bindings--,n.DefaultLocationProxy._bindings<=0&&t.clearInterval(n.DefaultLocationProxy._interval)},getLocation:function(){return n.DefaultLocationProxy.fullPath(t.location)},setLocation:function(e){/^([^#\/]|$)/.test(e)&&(v&&!this.app.disable_push_state?e="/"+e:e="#!/"+e);if(e!=this.getLocation()){if(!(v&&!this.app.disable_push_state&&/^\//.test(e)))return t.location=e;history.pushState({path:e},t.title,e),this.app.trigger("location-changed")}},_startPolling:function(r){var i=this;if(!n.DefaultLocationProxy._interval){r||(r=10);var s=function(){var r=i.getLocation();(typeof n.DefaultLocationProxy._last_location=="undefined"||r!=n.DefaultLocationProxy._last_location)&&t.setTimeout(function(){e(t).trigger("hashchange",[!0])},0),n.DefaultLocationProxy._last_location=r};s(),n.DefaultLocationProxy._interval=t.setInterval(s,r)}}}),n.Application=function(e){var t=this;this.routes={},this.listeners=new n.Object({}),this.arounds=[],this.befores=[],this.namespace=(new Date).getTime()+"-"+parseInt(Math.random()*1e3,10),this.context_prototype=function(){n.EventContext.apply(this,arguments)},this.context_prototype.prototype=new n.EventContext,u(e)&&e.apply(this,[this]),this._location_proxy||this.setLocationProxy(new n.DefaultLocationProxy(this,this.run_interval_every)),this.debug&&this.bindToAllEvents(function(e,n){t.log(t.toString(),e.cleaned_type,n||{})})},n.Application.prototype=e.extend({},n.Object.prototype,{ROUTE_VERBS:["get","post","put","delete"],APP_EVENTS:["run","unload","lookup-route","run-route","route-found","event-context-before","event-context-after","changed","error","check-form-submission","redirect","location-changed"],_last_route:null,_location_proxy:null,_running:!1,element_selector:"body",debug:!1,raise_errors:!1,run_interval_every:50,disable_push_state:!1,template_engine:null,toString:function(){return"Sammy.Application:"+this.element_selector},$element:function(t){return t?e(this.element_selector).find(t):e(this.element_selector)},use:function(){var e=o(arguments),t=e.shift(),r=t||"";try{e.unshift(this),typeof t=="string"&&(r="Sammy."+t,t=n[t]),t.apply(this,e)}catch(i){typeof t=="undefined"?this.error("Plugin Error: called use() but plugin ("+r.toString()+") is not defined",i):u(t)?this.error("Plugin Error",i):this.error("Plugin Error: called use() but '"+r.toString()+"' is not a function",i)}return this},setLocationProxy:function(e){var t=this._location_proxy;this._location_proxy=e,this.isRunning()&&(t&&t.unbind(),this._location_proxy.bind())},log:function(){n.log.apply(n,Array.prototype.concat.apply([this.element_selector],arguments))},route:function(t,n,s){var o=this,a=[],f,l;!s&&u(n)&&(n=t,s=n,t="any"),t=t.toLowerCase();if(n.constructor==String){i.lastIndex=0;while((l=i.exec(n))!==null)a.push(l[1]);n=new RegExp(n.replace(i,r)+"$")}return typeof s=="string"&&(s=o[s]),f=function(e){var t={verb:e,path:n,callback:s,param_names:a};o.routes[e]=o.routes[e]||[],o.routes[e].push(t)},t==="any"?e.each(this.ROUTE_VERBS,function(e,t){f(t)}):f(t),this},get:p("get"),post:p("post"),put:p("put"),del:p("delete"),any:p("any"),mapRoutes:function(t){var n=this;return e.each(t,function(e,t){n.route.apply(n,t)}),this},eventNamespace:function(){return["sammy-app",this.namespace].join("-")},bind:function(e,t,n){var r=this;typeof n=="undefined"&&(n=t);var i=function(){var e,t,i;e=arguments[0],i=arguments[1],i&&i.context?(t=i.context,delete i.context):t=new r.context_prototype(r,"bind",e.type,i,e.target),e.cleaned_type=e.type.replace(r.eventNamespace(),""),n.apply(t,[e,i])};return this.listeners[e]||(this.listeners[e]=[]),this.listeners[e].push(i),this.isRunning()&&this._listen(e,i),this},trigger:function(e,t){return this.$element().trigger([e,this.eventNamespace()].join("."),[t]),this},refresh:function(){return this.last_location=null,this.trigger("location-changed"),this},before:function(e,t){return u(e)&&(t=e,e={}),this.befores.push([e,t]),this},after:function(e){return this.bind("event-context-after",e)},around:function(e){return this.arounds.push(e),this},isRunning:function(){return this._running},helpers:function(t){return e.extend(this.context_prototype.prototype,t),this},helper:function(e,t){return this.context_prototype.prototype[e]=t,this},run:function(n){if(this.isRunning())return!1;var r=this;return e.each(this.listeners.toHash(),function(t,n){e.each(n,function(e,n){r._listen(t,n)})}),this.trigger("run",{start_url:n}),this._running=!0,this.last_location=null,!/\#(.+)/.test(this.getLocation())&&typeof n!="undefined"&&this.setLocation(n),this._checkLocation(),this._location_proxy.bind(),this.bind("location-changed",function(){r._checkLocation()}),this.bind("submit",function(t){var n=r._checkFormSubmission(e(t.target).closest("form"));return n===!1?t.preventDefault():!1}),e(t).bind("unload",function(){r.unload()}),this.trigger("changed")},unload:function(){if(!this.isRunning())return!1;var t=this;return this.trigger("unload"),this._location_proxy.unbind(),this.$element().unbind("submit").removeClass(t.eventNamespace()),e.each(this.listeners.toHash(),function(n,r){e.each(r,function(e,r){t._unlisten(n,r)})}),this._running=!1,this},destroy:function(){return this.unload(),delete n.apps[this.element_selector],this},bindToAllEvents:function(t){var n=this;return e.each(this.APP_EVENTS,function(e,r){n.bind(r,t)}),e.each(this.listeners.keys(!0),function(r,i){e.inArray(i,n.APP_EVENTS)==-1&&n.bind(i,t)}),this},routablePath:function(e){return e.replace(s,"")},lookupRoute:function(e,t){var n=this,r=!1,i=0,s,o;if(typeof this.routes[e]!="undefined"){s=this.routes[e].length;for(;i<s;i++){o=this.routes[e][i];if(n.routablePath(t).match(o.path)){r=o;break}}}return r},runRoute:function(t,n,r,i){var s=this,o=this.lookupRoute(t,n),u,a,f,c,h,p,d,v,m;this.log("runRoute",[t,n].join(" ")),this.trigger("run-route",{verb:t,path:n,params:r}),typeof r=="undefined"&&(r={}),e.extend(r,this._parseQueryString(n));if(o){this.trigger("route-found",{route:o}),(v=o.path.exec(this.routablePath(n)))!==null&&(v.shift(),e.each(v,function(e,t){o.param_names[e]?r[o.param_names[e]]=l(t):(r.splat||(r.splat=[]),r.splat.push(l(t)))})),u=new this.context_prototype(this,t,n,r,i),f=this.arounds.slice(0),h=this.befores.slice(0),d=[u].concat(r.splat),a=function(){var e;while(h.length>0){p=h.shift();if(s.contextMatchesOptions(u,p[0])){e=p[1].apply(u,[u]);if(e===!1)return!1}}return s.last_route=o,u.trigger("event-context-before",{context:u}),e=o.callback.apply(u,d),u.trigger("event-context-after",{context:u}),e},e.each(f.reverse(),function(e,t){var n=a;a=function(){return t.apply(u,[n])}});try{m=a()}catch(g){this.error(["500 Error",t,n].join(" "),g)}return m}return this.notFound(t,n)},contextMatchesOptions:function(t,n,r){var i=n;if(typeof i=="string"||f(i))i={path:i};typeof r=="undefined"&&(r=!0);if(e.isEmptyObject(i))return!0;if(a(i.path)){var s,o,u,l;s=[];for(o=0,l=i.path.length;o<l;o+=1)u=e.extend({},i,{path:i.path[o]}),s.push(this.contextMatchesOptions(t,u));var c=e.inArray(!0,s)>-1?!0:!1;return r?c:!c}if(i.only)return this.contextMatchesOptions(t,i.only,!0);if(i.except)return this.contextMatchesOptions(t,i.except,!1);var h=!0,p=!0;return i.path&&(f(i.path)||(i.path=new RegExp(i.path.toString()+"$")),h=i.path.test(t.path)),i.verb&&(typeof i.verb=="string"?p=i.verb===t.verb:p=i.verb.indexOf(t.verb)>-1),r?p&&h:!p||!h},getLocation:function(){return this._location_proxy.getLocation()},setLocation:function(e){return this._location_proxy.setLocation(e)},swap:function(e,t){var n=this.$element().html(e);return u(t)&&t(e),n},templateCache:function(e,t){return typeof t!="undefined"?d[e]=t:d[e]},clearTemplateCache:function(){return d={}},notFound:function(e,t){var n=this.error(["404 Not Found",e,t].join(" "));return e==="get"?n:!0},error:function(e,t){t||(t=new Error),t.message=[e,t.message].join(" "),this.trigger("error",{message:t.message,error:t});if(this.raise_errors)throw t;this.log(t.message,t)},_checkLocation:function(){var e,t;e=this.getLocation();if(!this.last_location||this.last_location[0]!="get"||this.last_location[1]!=e)this.last_location=["get",e],t=this.runRoute("get",e);return t},_getFormVerb:function(t){var n=e(t),r,i;i=n.find('input[name="_method"]'),i.length>0&&(r=i.val()),r||(r=n[0].getAttribute("method"));if(!r||r==="")r="get";return e.trim(r.toString().toLowerCase())},_checkFormSubmission:function(t){var n,r,i,s,o;return this.trigger("check-form-submission",{form:t}),n=e(t),r=n.attr("action")||"",i=this._getFormVerb(n),this.log("_checkFormSubmission",n,r,i),i==="get"?(s=this._serializeFormParams(n),s!==""&&(r+="?"+s),this.setLocation(r),o=!1):(s=e.extend({},this._parseFormParams(n)),o=this.runRoute(i,r,s,t.get(0))),typeof o=="undefined"?!1:o},_serializeFormParams:function(e){var t="",n=e.serializeArray(),r;if(n.length>0){t=this._encodeFormPair(n[0].name,n[0].value);for(r=1;r<n.length;r++)t=t+"&"+this._encodeFormPair(n[r].name,n[r].value)}return t},_encodeFormPair:function(e,t){return c(e)+"="+c(t)},_parseFormParams:function(e){var t={},n=e.serializeArray(),r;for(r=0;r<n.length;r++)t=this._parseParamPair(t,n[r].name,n[r].value);return t},_parseQueryString:function(e){var t={},n,r,i,o;n=e.match(s);if(n&&n[1]){r=n[1].split("&");for(o=0;o<r.length;o++)i=r[o].split("="),t=this._parseParamPair(t,l(i[0]),l(i[1]||""))}return t},_parseParamPair:function(e,t,n){return typeof e[t]!="undefined"?a(e[t])?e[t].push(n):e[t]=[e[t],n]:e[t]=n,e},_listen:function(e,t){return this.$element().bind([e,this.eventNamespace()].join("."),t)},_unlisten:function(e,t){return this.$element().unbind([e,this.eventNamespace()].join("."),t)}}),n.RenderContext=function(e){this.event_context=e,this.callbacks=[],this.previous_content=null,this.content=null,this.next_engine=!1,this.waiting=!1},n.RenderContext.prototype=e.extend({},n.Object.prototype,{then:function(e){if(!u(e)){if(!(typeof e=="string"&&e in this.event_context))return this;var n=this.event_context[e];e=function(e){return n.apply(this.event_context,[e])}}var r=this;return this.waiting?this.callbacks.push(e):(this.wait(),t.setTimeout(function(){var t=e.apply(r,[r.content,r.previous_content]);t!==!1&&r.next(t)},0)),this},wait:function(){this.waiting=!0},next:function(e){this.waiting=!1,typeof e!="undefined"&&(this.previous_content=this.content,this.content=e),this.callbacks.length>0&&this.then(this.callbacks.shift())},load:function(t,n,r){var i=this;return this.then(function(){var s,o,a,f;u(n)?(r=n,n={}):n=e.extend({},n),r&&this.then(r);if(typeof t=="string")return a=t.match(/\.json$/)||n.json,s=a?n.cache===!0:n.cache!==!1,i.next_engine=i.event_context.engineFor(t),delete n.cache,delete n.json,n.engine&&(i.next_engine=n.engine,delete n.engine),s&&(o=this.event_context.app.templateCache(t))?o:(this.wait(),e.ajax(e.extend({url:t,data:{},dataType:a?"json":"text",type:"get",success:function(e){s&&i.event_context.app.templateCache(t,e),i.next(e)}},n)),!1);if(t.nodeType)return t.innerHTML;if(t.selector)return i.next_engine=t.attr("data-engine"),n.clone===!1?t.remove()[0].innerHTML.toString():t[0].innerHTML.toString()})},loadPartials:function(e){var t;if(e){this.partials=this.partials||{};for(t in e)(function(t,n){t.load(e[n]).then(function(e){this.partials[n]=e})})(this,t)}return this},render:function(e,t,n,r){return u(e)&&!t?this.then(e):(u(t)?(r=n,n=t,t=null):n&&!u(n)&&(r=n,n=null),this.loadPartials(r).load(e).interpolate(t,e).then(n))},partial:function(e,t,n,r){return u(n)?this.render(e,t,r).swap(n):u(t)?this.render(e,{},n).swap(t):this.render(e,t,n).swap()},send:function(){var e=this,t=o(arguments),n=t.shift();return a(t[0])&&(t=t[0]),this.then(function(r){return t.push(function(t){e.next(t)}),e.wait(),n.apply(n,t),!1})},collect:function(t,n,r){var i=this,s=function(){u(t)&&(n=t,t=this.content);var r=[],s=!1;return e.each(t,function(e,t){var o=n.apply(i,[e,t]);return o.jquery&&o.length==1&&(o=o[0],s=!0),r.push(o),o}),s?r:r.join("")};return r?s():this.then(s)},renderEach:function(t,n,r,i){return a(n)&&(i=r,r=n,n=null),this.load(t).then(function(s){var o=this;r||(r=a(this.previous_content)?this.previous_content:[]);if(!i)return this.collect(r,function(e,r){var i={},o=this.next_engine||t;return n?i[n]=r:i=r,this.event_context.interpolate(s,i,o)},!0);e.each(r,function(e,r){var u={},a=this.next_engine||t;n?u[n]=r:u=r,i(r,o.event_context.interpolate(s,u,a))})})},interpolate:function(e,t,n){var r=this;return this.then(function(i,s){!e&&s&&(e=s),this.next_engine&&(t=this.next_engine,this.next_engine=!1);var o=r.event_context.interpolate(i,e,t,this.partials);return n?s+o:o})},swap:function(e){return this.then(function(t){return this.event_context.swap(t,e),t}).trigger("changed",{})},appendTo:function(t){return this.then(function(n){e(t).append(n)}).trigger("changed",{})},prependTo:function(t){return this.then(function(n){e(t).prepend(n)}).trigger("changed",{})},replace:function(t){return this.then(function(n){e(t).html(n)}).trigger("changed",{})},trigger:function(e,t){return this.then(function(n){return typeof t=="undefined"&&(t={content:n}),this.event_context.trigger(e,t),n})}}),n.EventContext=function(e,t,r,i,s){this.app=e,this.verb=t,this.path=r,this.params=new n.Object(i),this.target=s},n.EventContext.prototype=e.extend({},n.Object.prototype,{$element:function(){return this.app.$element(o(arguments).shift())},engineFor:function(e){var t=this,n;if(u(e))return e;e=(e||t.app.template_engine).toString();if(n=e.match(/\.([^\.\?\#]+)$/))e=n[1];return e&&u(t[e])?t[e]:t.app.template_engine?this.engineFor(t.app.template_engine):function(e,t){return e}},interpolate:function(e,t,n,r){return this.engineFor(n).apply(this,[e,t,r])},render:function(e,t,r,i){return(new n.RenderContext(this)).render(e,t,r,i)},renderEach:function(e,t,r,i){return(new n.RenderContext(this)).renderEach(e,t,r,i)},load:function(e,t,r){return(new n.RenderContext(this)).load(e,t,r)},loadPartials:function(e){return(new n.RenderContext(this)).loadPartials(e)},partial:function(e,t,r,i){return(new n.RenderContext(this)).partial(e,t,r,i)},send:function(){var e=new n.RenderContext(this);return e.send.apply(e,arguments)},redirect:function(){var t,n=o(arguments),r=this.app.getLocation(),i=n.length;if(i>1){var s=0,u=[],a=[],f={},l=!1;for(;s<i;s++)typeof n[s]=="string"?u.push(n[s]):(e.extend(f,n[s]),l=!0);t=u.join("/");if(l){for(var c in f)a.push(this.app._encodeFormPair(c,f[c]));t+="?"+a.join("&")}}else t=n[0];this.trigger("redirect",{to:t}),this.app.last_location=[this.verb,this.path],this.app.setLocation(t),(new RegExp(t)).test(r)&&this.app.trigger("location-changed")},trigger:function(e,t){return typeof t=="undefined"&&(t={}),t.context||(t.context=this),this.app.trigger(e,t)},eventNamespace:function(){return this.app.eventNamespace()},swap:function(e,t){return this.app.swap(e,t)},notFound:function(){return this.app.notFound(this.verb,this.path)},json:function(t){return e.parseJSON(t)},toString:function(){return"Sammy.EventContext: "+[this.verb,this.path,this.params].join(" ")}}),n})})(jQuery,window);
 
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+    define(['jquery', 'sammy'], factory);
+  } else {
+    (window.Sammy = window.Sammy || {}).JSON = factory(window.jQuery, window.Sammy);
+  }
+}(function ($, Sammy) {
+
+  // json2.js - only included if native json does not exist
+  // http://www.json.org/js.html
+  if (!window.JSON) {
+    window.JSON = {};
+  }
+  (function () {
+
+      function f(n) {
+          // Format integers to have at least two digits.
+          return n < 10 ? '0' + n : n;
+      }
+
+      if (typeof Date.prototype.toJSON !== 'function') {
+
+          Date.prototype.toJSON = function (key) {
+
+              return this.getUTCFullYear()   + '-' +
+                   f(this.getUTCMonth() + 1) + '-' +
+                   f(this.getUTCDate())      + 'T' +
+                   f(this.getUTCHours())     + ':' +
+                   f(this.getUTCMinutes())   + ':' +
+                   f(this.getUTCSeconds())   + 'Z';
+          };
+
+          String.prototype.toJSON =
+          Number.prototype.toJSON =
+          Boolean.prototype.toJSON = function (key) {
+              return this.valueOf();
+          };
+      }
+
+      var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+          escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+          gap,
+          indent,
+          meta = {    // table of character substitutions
+              '\b': '\\b',
+              '\t': '\\t',
+              '\n': '\\n',
+              '\f': '\\f',
+              '\r': '\\r',
+              '"' : '\\"',
+              '\\': '\\\\'
+          },
+          rep;
+
+
+      function quote(string) {
+
+  // If the string contains no control characters, no quote characters, and no
+  // backslash characters, then we can safely slap some quotes around it.
+  // Otherwise we must also replace the offending characters with safe escape
+  // sequences.
+
+          escapable.lastIndex = 0;
+          return escapable.test(string) ?
+              '"' + string.replace(escapable, function (a) {
+                  var c = meta[a];
+                  return typeof c === 'string' ? c :
+                      '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+              }) + '"' :
+              '"' + string + '"';
+      }
+
+
+      function str(key, holder) {
+
+  // Produce a string from holder[key].
+
+          var i,          // The loop counter.
+              k,          // The member key.
+              v,          // The member value.
+              length,
+              mind = gap,
+              partial,
+              value = holder[key];
+
+  // If the value has a toJSON method, call it to obtain a replacement value.
+
+          if (value && typeof value === 'object' &&
+                  typeof value.toJSON === 'function') {
+              value = value.toJSON(key);
+          }
+
+  // If we were called with a replacer function, then call the replacer to
+  // obtain a replacement value.
+
+          if (typeof rep === 'function') {
+              value = rep.call(holder, key, value);
+          }
+
+  // What happens next depends on the value's type.
+
+          switch (typeof value) {
+          case 'string':
+              return quote(value);
+
+          case 'number':
+
+  // JSON numbers must be finite. Encode non-finite numbers as null.
+
+              return isFinite(value) ? String(value) : 'null';
+
+          case 'boolean':
+          case 'null':
+
+  // If the value is a boolean or null, convert it to a string. Note:
+  // typeof null does not produce 'null'. The case is included here in
+  // the remote chance that this gets fixed someday.
+
+              return String(value);
+
+  // If the type is 'object', we might be dealing with an object or an array or
+  // null.
+
+          case 'object':
+
+  // Due to a specification blunder in ECMAScript, typeof null is 'object',
+  // so watch out for that case.
+
+              if (!value) {
+                  return 'null';
+              }
+
+  // Make an array to hold the partial results of stringifying this object value.
+
+              gap += indent;
+              partial = [];
+
+  // Is the value an array?
+
+              if (Object.prototype.toString.apply(value) === '[object Array]') {
+
+  // The value is an array. Stringify every element. Use null as a placeholder
+  // for non-JSON values.
+
+                  length = value.length;
+                  for (i = 0; i < length; i += 1) {
+                      partial[i] = str(i, value) || 'null';
+                  }
+
+  // Join all of the elements together, separated with commas, and wrap them in
+  // brackets.
+
+                  v = partial.length === 0 ? '[]' :
+                      gap ? '[\n' + gap +
+                              partial.join(',\n' + gap) + '\n' +
+                                  mind + ']' :
+                            '[' + partial.join(',') + ']';
+                  gap = mind;
+                  return v;
+              }
+
+  // If the replacer is an array, use it to select the members to be stringified.
+
+              if (rep && typeof rep === 'object') {
+                  length = rep.length;
+                  for (i = 0; i < length; i += 1) {
+                      k = rep[i];
+                      if (typeof k === 'string') {
+                          v = str(k, value);
+                          if (v) {
+                              partial.push(quote(k) + (gap ? ': ' : ':') + v);
+                          }
+                      }
+                  }
+              } else {
+
+  // Otherwise, iterate through all of the keys in the object.
+
+                  for (k in value) {
+                      if (Object.hasOwnProperty.call(value, k)) {
+                          v = str(k, value);
+                          if (v) {
+                              partial.push(quote(k) + (gap ? ': ' : ':') + v);
+                          }
+                      }
+                  }
+              }
+
+  // Join all of the member texts together, separated with commas,
+  // and wrap them in braces.
+
+              v = partial.length === 0 ? '{}' :
+                  gap ? '{\n' + gap + partial.join(',\n' + gap) + '\n' +
+                          mind + '}' : '{' + partial.join(',') + '}';
+              gap = mind;
+              return v;
+          }
+      }
+
+  // If the JSON object does not yet have a stringify method, give it one.
+
+      if (typeof JSON.stringify !== 'function') {
+          JSON.stringify = function (value, replacer, space) {
+
+  // The stringify method takes a value and an optional replacer, and an optional
+  // space parameter, and returns a JSON text. The replacer can be a function
+  // that can replace values, or an array of strings that will select the keys.
+  // A default replacer method can be provided. Use of the space parameter can
+  // produce text that is more easily readable.
+
+              var i;
+              gap = '';
+              indent = '';
+
+  // If the space parameter is a number, make an indent string containing that
+  // many spaces.
+
+              if (typeof space === 'number') {
+                  for (i = 0; i < space; i += 1) {
+                      indent += ' ';
+                  }
+
+  // If the space parameter is a string, it will be used as the indent string.
+
+              } else if (typeof space === 'string') {
+                  indent = space;
+              }
+
+  // If there is a replacer, it must be a function or an array.
+  // Otherwise, throw an error.
+
+              rep = replacer;
+              if (replacer && typeof replacer !== 'function' &&
+                      (typeof replacer !== 'object' ||
+                       typeof replacer.length !== 'number')) {
+                  throw new Error('JSON.stringify');
+              }
+
+  // Make a fake root object containing our value under the key of ''.
+  // Return the result of stringifying the value.
+
+              return str('', {'': value});
+          };
+      }
+
+
+  // If the JSON object does not yet have a parse method, give it one.
+
+      if (typeof JSON.parse !== 'function') {
+          JSON.parse = function (text, reviver) {
+
+  // The parse method takes a text and an optional reviver function, and returns
+  // a JavaScript value if the text is a valid JSON text.
+
+              var j;
+
+              function walk(holder, key) {
+
+  // The walk method is used to recursively walk the resulting structure so
+  // that modifications can be made.
+
+                  var k, v, value = holder[key];
+                  if (value && typeof value === 'object') {
+                      for (k in value) {
+                          if (Object.hasOwnProperty.call(value, k)) {
+                              v = walk(value, k);
+                              if (v !== undefined) {
+                                  value[k] = v;
+                              } else {
+                                  delete value[k];
+                              }
+                          }
+                      }
+                  }
+                  return reviver.call(holder, key, value);
+              }
+
+
+  // Parsing happens in four stages. In the first stage, we replace certain
+  // Unicode characters with escape sequences. JavaScript handles many characters
+  // incorrectly, either silently deleting them, or treating them as line endings.
+
+              cx.lastIndex = 0;
+              if (cx.test(text)) {
+                  text = text.replace(cx, function (a) {
+                      return '\\u' +
+                          ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+                  });
+              }
+
+  // In the second stage, we run the text against regular expressions that look
+  // for non-JSON patterns. We are especially concerned with '()' and 'new'
+  // because they can cause invocation, and '=' because it can cause mutation.
+  // But just to be safe, we want to reject all unexpected forms.
+
+  // We split the second stage into 4 regexp operations in order to work around
+  // crippling inefficiencies in IE's and Safari's regexp engines. First we
+  // replace the JSON backslash pairs with '@' (a non-JSON character). Second, we
+  // replace all simple value tokens with ']' characters. Third, we delete all
+  // open brackets that follow a colon or comma or that begin the text. Finally,
+  // we look to see that the remaining characters are only whitespace or ']' or
+  // ',' or ':' or '{' or '}'. If that is so, then the text is safe for eval.
+
+              if (/^[\],:{}\s]*$/.
+  test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@').
+  replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').
+  replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
+
+  // In the third stage we use the eval function to compile the text into a
+  // JavaScript structure. The '{' operator is subject to a syntactic ambiguity
+  // in JavaScript: it can begin a block or an object literal. We wrap the text
+  // in parens to eliminate the ambiguity.
+
+                  j = eval('(' + text + ')');
+
+  // In the optional fourth stage, we recursively walk the new structure, passing
+  // each name/value pair to a reviver function for possible transformation.
+
+                  return typeof reviver === 'function' ?
+                      walk({'': j}, '') : j;
+              }
+
+  // If the text is not JSON parseable, then a SyntaxError is thrown.
+
+              throw new SyntaxError('JSON.parse');
+          };
+      }
+  }());
+
+  // Sammy.JSON is a simple wrapper around Douglas Crockford's ever-useful json2.js
+  // (http://www.json.org/js.html]) Sammy.JSON includes the top level JSON object if
+  // it doesn't already exist (a.k.a. does not override the native implementation that
+  // some browsers include). It also adds a <tt>json()</tt> helper to a Sammy app when
+  // included.
+  Sammy.JSON = function(app) {
+
+    app.helpers({
+      // json is a polymorphic function that translates objects aback and forth
+      // from JSON to JS. If given a string, it will parse into JS, if given a JS
+      // object it will stringify into JSON.
+      //
+      // ### Example
+      //
+      //      var app = $.sammy(function() {
+      //        this.use(Sammy.JSON);
+      //
+      //        this.get('#/', function() {
+      //          this.json({user_id: 123}); //=> "{\"user_id\":\"123\"}"
+      //          this.json("{\"user_id\":\"123\"}"); //=> [object Object]
+      //          this.json("{\"user_id\":\"123\"}").user_id; //=> "123"
+      //        });
+      //      })
+      //
+      //
+      json: function(object) {
+        if (typeof object == 'string') {
+          return JSON.parse(object);
+        } else {
+          return JSON.stringify(object);
+        }
+      }
+    });
+
+  }
+
+  return Sammy.JSON;
+
+}));
 // Avoid `console` errors in browsers that lack a console.
 (function() {
     var method;
@@ -40,19 +408,32 @@
 // Place any jQuery/helper plugins in here.
 
 
+(function($) {
+	console.log('Sammy', Sammy);
+    Sammy.JSON.LoadJSON = function(app) {
+        app.helpers({
+            loadJSON: function(location, options, callback) {
+                options = $.extend(options, {json: true});
+                return new Sammy.RenderContext(this).load(location, options, callback);
+            }
+        });
+    }
+})(jQuery);
 (function($){
 	// console.log('message');
 	var app = $.sammy("#main", function() {
 		// this.element_selector= "#main"; // Alternate way to define element selector
+		this.use(Sammy.JSON.LoadJSON);
 
 		this.get('#/', function(context) {
-			context.log('ya ya ya');
-			this.load('/logon')
+			context.log('ya ya ya', context);
+			this.loadJSON('http://localhost:5100/#/logon')
 				.then(function(items) {
-					 context.render('templates/index', items)
-					 	.appendTo(context.$element());
-			});
-				
+	                context.log(items, context.render('template/login.html', items));
+                	context.render('template/login.html', items)
+				  		.appendTo(context.$element());
+				});
+			context.app.swap('');
         });
 
 	});

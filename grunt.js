@@ -4,6 +4,7 @@ module.exports = function(grunt){
 	grunt.loadNpmTasks('grunt-coffee');
 	 // grunt.loadNpmTasks('grunt-growl');
 	 grunt.loadTasks('tasks');
+	 // grunt.loadNpmTasks('grunt-jslint');
 	 grunt.loadNpmTasks('grunt-reload');
 
 	// Project configuration.
@@ -51,7 +52,8 @@ module.exports = function(grunt){
 				      	'public/js/vendor/sammy*.js', 				      
 						'public/js/plugins.js',              
 						'public/js/main.js',
-						'public/js/bootstrap.js'
+						'public/js/app/sammy.json.helper.js',
+						'public/js/app/bootstrap.js'
 						],
 				dest: 'public/js/js-script.js'
 			}
@@ -61,6 +63,16 @@ module.exports = function(grunt){
 				src: [ '<config:concat.dist.dest>' ],
 				dest: 'public/js/js-script.min.js'
 			}
+		},
+		lint: {
+			files: [ // some example files
+                'grunt.js',
+                '/**/*.js'
+            ],
+            options: {
+            	errorsOnly: true
+            	// log: '/log/error.log'
+            }
 		},
 	    watch: {
 		    coffee: {
@@ -78,17 +90,8 @@ module.exports = function(grunt){
 				tasks: ['concat', 'min']
 			}
 		},
-		uglify: {}
 	});
 
- //    // Register task.
- //    grunt.registerTask('server', 'Start coffee-express web server.', function() {
-	// 	// grunt.log.writeln('Starting web server on port 5000.');
-	// 	require('./server');
-	// });
-
     grunt.registerTask('default', ['coffee', 'less', 'concat', 'min', 'watch']);
-    // grunt.registerTask('coffeeCompile', 'coffee');
-    // grunt.registerTask('lessCompile', 'less');
 
 }

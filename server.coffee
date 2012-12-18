@@ -34,12 +34,12 @@ app.configure( ->
 		else
 			res.render('index.html')
 	)
-	
+
 )
 
 app.get '/:action?', (req, res, next) ->
 	console.log('test log', req.params.action)
-	json.send({})
+	res.json({"Name": "Ekta Mehta", "Email": "emehta@glgroup.com"})
 
 port = process.env.PORT or 5000
 app.listen port

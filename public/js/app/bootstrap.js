@@ -2,15 +2,17 @@
 	// console.log('message');
 	var app = $.sammy("#main", function() {
 		// this.element_selector= "#main"; // Alternate way to define element selector
+		this.use(Sammy.JSON.LoadJSON);
 
 		this.get('#/', function(context) {
-			context.log('ya ya ya');
-			this.load('/logon')
+			context.log('ya ya ya', context);
+			this.loadJSON('http://localhost:5100/#/logon')
 				.then(function(items) {
-					 context.render('templates/index', items)
-					 	.appendTo(context.$element());
-			});
-				
+	                context.log(items, context.render('template/login.html', items));
+                	context.render('template/login.html', items)
+				  		.appendTo(context.$element());
+				});
+			context.app.swap('');
         });
 
 	});
