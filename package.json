@@ -17,7 +17,8 @@
     "grunt-reload": "0.2.x",
     "foreman": "0.0.x",
     "supervisor": "0.5.x",
-    "grunt-jslint": "0.2.x"
+    "grunt-jslint": "0.2.x",
+    "mongojs": "0.4.x"
   },
 
   "scripts": {

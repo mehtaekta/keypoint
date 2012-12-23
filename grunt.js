@@ -2,9 +2,7 @@ module.exports = function(grunt){
 
 	// Load tasks from plugin
 	grunt.loadNpmTasks('grunt-coffee');
-	 // grunt.loadNpmTasks('grunt-growl');
 	 grunt.loadTasks('tasks');
-	 // grunt.loadNpmTasks('grunt-jslint');
 	 grunt.loadNpmTasks('grunt-reload');
 
 	// Project configuration.
@@ -46,28 +44,39 @@ module.exports = function(grunt){
 	      	}
 	    },
 	    concat: {
-			dist: {
+			vendor: {
 				src: ['public/js/vendor/jquery*.js', 
+						'public/js/vendor/underscore-*.js',
+						'public/js/vendor/underscore-string.js',
 						'public/js/vendor/modernizr*.js', 
 				      	'public/js/vendor/sammy*.js', 				      
-						'public/js/plugins.js',              
-						'public/js/main.js',
-						'public/js/app/sammy.json.helper.js',
+				      	'public/js/vendor/moment*.js', 		
+						'public/js/vendor/plugins.js'						
+						],
+				dest: 'public/js/vendor-script.js'
+			},
+			app: {
+				src: ['public/js/app/sammy.json.helper.js',
 						'public/js/app/bootstrap.js'
 						],
-				dest: 'public/js/js-script.js'
-			}
+				dest: 'public/js/app-script.js'
+			},
 		},
 		min: {
-			dist: {
-				src: [ '<config:concat.dist.dest>' ],
-				dest: 'public/js/js-script.min.js'
+			vendor: {
+				src: [ '<config:concat.vendor.dest>' ],
+				dest: 'public/js/vendor-script.js'
+			},
+			app: {
+				src: [ '<config:concat.app.dest>' ],
+				dest: 'public/js/app-script.js'
 			}
 		},
 		lint: {
 			files: [ // some example files
                 'grunt.js',
-                '/**/*.js'
+                '<config:concat.vendor.src>',
+                '<config:concat.app.src>'
             ],
             options: {
             	errorsOnly: true
@@ -81,17 +90,20 @@ module.exports = function(grunt){
 		        // tasks: 'coffee:app growl'
 		    }			
 	    	,less: {
-				files: '<config:less.app.src>',
+				files: 'less/**/*.less',
 				tasks: ['less']
 			// tasks: 'coffee:app growl'
 			},
-			min: {
-				files: '<config:concat.dist.src>',
-				tasks: ['concat', 'min']
+			concat: {
+				files: ['<config:concat.vendor.src>', '<config:concat.app.src>'],
+				tasks: ['concat']
 			}
 		},
 	});
 
-    grunt.registerTask('default', ['coffee', 'less', 'concat', 'min', 'watch']);
-
+	if(process.env.NODE_ENV == 'development') {
+		grunt.registerTask('default', ['coffee', 'less', 'concat', 'watch']);
+	} else {
+		grunt.registerTask('default', ['coffee', 'less', 'concat', 'min', 'watch']);
+	}
 }
