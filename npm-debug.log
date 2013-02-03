@@ -1,0 +1,32 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'c:\\Program Files\\nodejs\\node.exe',
+1 verbose cli   'c:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'run-script',
+1 verbose cli   'watch' ]
+2 info using npm@1.2.2
+3 info using node@v0.8.18
+4 verbose read json c:\Users\Ekta Mehta\projects\keypoint\package.json
+5 verbose run-script [ 'prewatch', 'watch', 'postwatch' ]
+6 info prewatch Key-Point@1.0.0
+7 info watch Key-Point@1.0.0
+8 verbose unsafe-perm in lifecycle true
+9 silly exec cmd "/c" "node ./node_modules/grunt/bin/grunt watch"
+10 silly cmd,/c,node ./node_modules/grunt/bin/grunt watch,c:\Users\Ekta Mehta\projects\keypoint spawning
+11 info Key-Point@1.0.0 Failed to exec watch script
+12 error Key-Point@1.0.0 watch: `node ./node_modules/grunt/bin/grunt watch`
+12 error `cmd "/c" "node ./node_modules/grunt/bin/grunt watch"` failed with 1
+13 error Failed at the Key-Point@1.0.0 watch script.
+13 error This is most likely a problem with the Key-Point package,
+13 error not with npm itself.
+13 error Tell the author that this fails on your system:
+13 error     node ./node_modules/grunt/bin/grunt watch
+13 error You can get their info via:
+13 error     npm owner ls Key-Point
+13 error There is likely additional logging output above.
+14 error System Windows_NT 6.0.6002
+15 error command "c:\\Program Files\\nodejs\\node.exe" "c:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "run-script" "watch"
+16 error cwd c:\Users\Ekta Mehta\projects\keypoint
+17 error node -v v0.8.18
+18 error npm -v 1.2.2
+19 error code ELIFECYCLE
+20 verbose exit [ 1, true ]

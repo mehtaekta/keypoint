@@ -2,46 +2,26 @@ module.exports = function(grunt){
 
 	// Load tasks from plugin
 	grunt.loadNpmTasks('grunt-coffee');
-	 grunt.loadTasks('tasks');
+	 grunt.loadNpmTasks('grunt-contrib-less');
 	 grunt.loadNpmTasks('grunt-reload');
 
 	// Project configuration.
 	grunt.initConfig({
-		// server: {
-		//     port: 5000,
-		//     base: './server'
-		// },
-		// reload: {
-		//     port: 5000,
-		//     host: 'localhost'
-		//     // proxy: {
-	 //     //        host: 'localhost',
-	 //     //        port:5000,
-	 //     //    }
-		// },
-		coffee: {
-	      	app: {
-	        	src: '**/*.coffee',
-	        	dest: 'lib/',
-		        options: {
-		        	output: false,
-		            bare: false,
-		            preserve_dirs: true
-		        }
-	      	}
-	    },
-	    less: {
-	    	app: {
-		        src: 'less/style.less',
-		        dest: 'public/css/',
-		        options: {
-		        	compress: true,
-		        	silent: true,
-		        	optimization: 1,
-		            bare: true,
-		            preserve_dirs: false
-		        }
-	      	}
+		
+		less: {
+	      dev: {
+	        files: {
+	          "public/style.css": "less/style.less"
+	        }
+	      },
+	      prod: {
+	        options: {
+	          yuicompress: true
+	        },
+	        files: {
+	          "public/style.css": "less/style.less"
+	        }
+	      }
 	    },
 	    concat: {
 			vendor: {
@@ -84,15 +64,9 @@ module.exports = function(grunt){
             }
 		},
 	    watch: {
-		    coffee: {
-		        files: '<config:coffee.app.src>',
-		        tasks: ['coffee']
-		        // tasks: 'coffee:app growl'
-		    }			
-	    	,less: {
+		    less: {
 				files: 'less/**/*.less',
 				tasks: ['less']
-			// tasks: 'coffee:app growl'
 			},
 			concat: {
 				files: ['<config:concat.vendor.src>', '<config:concat.app.src>'],
@@ -101,9 +75,6 @@ module.exports = function(grunt){
 		},
 	});
 
-	if(process.env.NODE_ENV == 'development') {
-		grunt.registerTask('default', ['coffee', 'less', 'concat', 'watch']);
-	} else {
-		grunt.registerTask('default', ['coffee', 'less', 'concat', 'min', 'watch']);
-	}
+	grunt.registerTask('default', ['less', 'concat', 'less:dev']);
+	
 }

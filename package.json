@@ -1,8 +1,10 @@
 {
   "name":    "Key-Point",
   "version": "1.0.0",
-
+  "private":true,
+  "main": "server.js",
   "description": "Key Point",
+  "repository": "git@github.com:mehtaekta/keypoint.git",
   "preferGlobal": true,
   "dependencies": {
     "async":     "0.1.18",
@@ -15,16 +17,18 @@
     "grunt-coffee": "0.0.x",
     "grunt-contrib-less": "0.3.x",
     "grunt-reload": "0.2.x",
-    "foreman": "0.0.x",
-    "supervisor": "0.5.x",
     "grunt-jslint": "0.2.x",
-    "mongojs": "0.4.x"
+    "grunt-shell":"*",
+    "grunt-exec":"*",
+    "mongojs": "0.4.x",
+    "supervisor":"*"
   },
-
-  "scripts": {
-    "preinstall": "npm i -g grunt"
+  "scripts": { 
+    "prestart": "node ./node_modules/grunt/bin/grunt",
+    "start": "supervisor node server.js",
+    "watch": "node ./node_modules/grunt/bin/grunt watch"
   },
-
+  "optionalDependencies": {},
   "engines": {
     "node": "0.8.x"
   }
