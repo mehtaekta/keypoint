@@ -10,9 +10,10 @@
   app = express();
 
   app.configure(function() {
-    app.engine('.html', require('ejs').renderFile);
+    // app.engine('.html', require('ejs').renderFile);
+    app.engine('.jade', require('jade').__express);
     app.set('views', __dirname + "/public/views");
-    // app.set('view engine', 'ejs');
+    app.set('view engine', 'jade');
     app.set('view options', {
       layout: false,
       pretty: true
@@ -27,7 +28,7 @@
       if ((req.headers['content-type'] && req.headers['content-type'].indexOf('application/json') > -1) || (req.headers['accept'] && req.headers['accept'].indexOf('application/json') > -1)) {
         return next();
       } else {
-        return res.render('index.html');
+        return res.render('index');
       }
     });
   });

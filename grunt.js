@@ -7,7 +7,12 @@ module.exports = function(grunt){
 
 	// Project configuration.
 	grunt.initConfig({
-		
+		reload: {
+	        port: 5000,
+	        proxy: {
+	            host: 'localhost'
+	        }
+	    },
 		less: {
 	      dev: {
 	        files: {
@@ -63,10 +68,17 @@ module.exports = function(grunt){
             	// log: '/log/error.log'
             }
 		},
+		shell: {
+			killNode:{
+				command: "kill cmd.exe",
+        		stdout: true,
+        		failOnError: true
+			}
+		},
 	    watch: {
 		    less: {
 				files: 'less/**/*.less',
-				tasks: ['less']
+				tasks: ['less:dev']
 			},
 			concat: {
 				files: ['<config:concat.vendor.src>', '<config:concat.app.src>'],
@@ -75,6 +87,6 @@ module.exports = function(grunt){
 		},
 	});
 
-	grunt.registerTask('default', ['less', 'concat', 'less:dev']);
+	grunt.registerTask('default', ['less', 'concat', 'less:dev', 'watch']);
 	
 }
