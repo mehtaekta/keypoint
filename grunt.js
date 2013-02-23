@@ -16,7 +16,7 @@ module.exports = function(grunt){
 		less: {
 	      dev: {
 	        files: {
-	          "public/style.css": "less/style.less"
+	          "public/css/style.css": "less/style.less"
 	        }
 	      },
 	      prod: {
@@ -24,7 +24,7 @@ module.exports = function(grunt){
 	          yuicompress: true
 	        },
 	        files: {
-	          "public/style.css": "less/style.less"
+	          "public/css/style.css": "less/style.less"
 	        }
 	      }
 	    },
@@ -34,9 +34,18 @@ module.exports = function(grunt){
 						'public/js/vendor/underscore-*.js',
 						'public/js/vendor/underscore-string.js',
 						'public/js/vendor/modernizr*.js', 
+						"public/js/vendor/bootstrap/bootstrap-transition.js",
+						"public/js/vendor/bootstrap/bootstrap-collapse.js",
+						"public/js/vendor/bootstrap/bootstrap-button.js",
+						"public/js/vendor/bootstrap/bootstrap-modal.js",
+						"public/js/vendor/bootstrap/bootstrap-tab.js",
+						"public/js/vendor/bootstrap/bootstrap-tooltip.js",
+						"public/js/vendor/bootstrap/bootstrap-popover.js",
+						"public/js/vendor/bootstrap/bootstrap-dropdown.js",
+						"public/js/vendor/bootstrap/bootstrap-alert.js",
 				      	'public/js/vendor/sammy*.js', 				      
 				      	'public/js/vendor/moment*.js', 		
-						'public/js/vendor/plugins.js'						
+						'public/js/vendor/plugins.js'
 						],
 				dest: 'public/js/vendor-script.js'
 			},

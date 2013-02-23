@@ -9,7 +9,7 @@
   "dependencies": {
     "async":     "0.1.18",
     "express":   "3.0.x",
-    "jade":"",
+    "ejs":"*",
     "coffee-script": "1.3.x",
     "less": "1.3.0",
     "underscore": "1.3.3",
@@ -21,11 +21,13 @@
     "grunt-shell":"*",
     "grunt-exec":"*",
     "mongojs": "0.4.x",
-    "supervisor":"*"
+    "supervisor":"*",
+    "everyauth":"*",
+    "node-inspector":"git://github.com/dannycoates/node-inspector.git#master"
   },
   "scripts": { 
-    "prestart": "start /min node ./node_modules/grunt/bin/grunt",
-    "start": "supervisor node server.js",
+    "prestart": "start /min node ./node_modules/grunt/bin/grunt && start /min node ./node_modules/node-inspector/bin/inspector.js",
+    "start": "supervisor node --debug server.js",
     "stop": "taskkill -f /IM node.exe"
   },
   "optionalDependencies": {},
