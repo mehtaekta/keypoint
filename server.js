@@ -9,7 +9,7 @@
   errorHandler = require('./middleware/errorHandler');
   authenticateRequest = require('./middleware/authenticateRequest');
 
-  app = express();
+  app = express();  
 
   app.configure(function() {
     app.engine('.html', require('ejs').renderFile);
@@ -40,16 +40,14 @@
   });
 
   app.get('/authenticated', function(req, res, next) {
-    req.session.authorized = true;
-    console.log('home authenticated', req.session.authorized);
-    // res.json({name:'ekta', email: 'mehta.ekta@gmail.com'});
-    res.json({view:'home', payload :''});
-    // res.render('home.html');
+    req.session.authorized = true;    
+    res.json({view:'home', payload :''});    
   });
 
   app.get('/signout', function(req, res, next) {
     if (req.session.authorized) {
         console.log('logout now');
+        console.log('signedout action user', req.user);
         // this destroys the current session (not really necessary because you get a new one
         req.session.destroy(function() {
             delete req.session.user;  // remove credentials
@@ -62,7 +60,8 @@
 
   app.get('/:action?', function(req, res, next) {
     action = req.params.action;
-    console.log('test log', req.params.action);
+    // console.log('test log', req.params.action);
+    console.log('action action user',action, req.user);
     res.json({
       view: action,
       "Name": "Ekta Mehta",

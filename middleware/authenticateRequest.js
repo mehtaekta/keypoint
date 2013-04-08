@@ -1,5 +1,5 @@
 exports = module.exports = function authenticateRequest() {
-	console.log('authenticateRequest#############');
+	// console.log('authenticateRequest#############');
 	var noAuthRequest = [
 			'/login',
 			'/authenticated'
@@ -16,14 +16,14 @@ exports = module.exports = function authenticateRequest() {
 	}
 
 	return function authenticateRequest(req, res, next) {
-		console.log('authen', req.url); 
+		// console.log('authen', req.url); 
 		var exclude = _excludeRequestFromAuthen(req.url);
-		console.log('req.session', req.session);
+		// console.log('req.session', req.session, exclude);
 		if(exclude || (req.session && req.session.authorized)) {
 			console.log('authorized', req.session.authorized);
 			return next();
 		} else {
-			console.log('authenticateRequest', '401 error');
+			// console.log('authenticateRequest', '401 error');
 			res.json({view:'login'});
 			//next(new Error('401'));
 			// res.render('login.html');

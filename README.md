@@ -17,3 +17,6 @@ port:27017
 
 Ubuntu File permissions
 https://help.ubuntu.com/community/FilePermissions
+
+MongoDb
+http://docs.mongodb.org/manual/tutorial/install-mongodb-on-windows/

@@ -1,5 +1,6 @@
 var everyauth = require('everyauth'),
-	config = require('../config');
+	config = require('../config'),
+  mongoDB = require('./mongoDB');
 
   everyauth.google
   .myHostname('http://localhost:5000')
@@ -10,13 +11,34 @@ var everyauth = require('everyauth'),
   	console.log('handleAuthCallbackError');
   	res.render('401.html');
   })
-  .findOrCreateUser( function (sess, accessToken, extra, googleUser) {
-    console.log('##################', sess);
-    console.log('##################', accessToken);
-    console.log('##################', extra);
-    console.log('##################', googleUser);
+  .findOrCreateUser( function (sess, accessToken, extra, googleUser, req) {
+    // console.log('################## sess', sess);
+    // console.log('################## accessToken', accessToken);
+    // console.log('################## extra', extra);
+    // console.log('################## googleUser', googleUser, googleUser.id);
+    // sess.secret = 'keypoint';
     var promise = this.Promise(); 
-        promise.fulfill('test'); 
-        return promise;     
+    mongoDB.find({'id': googleUser.id}, function(err, user){
+      // console.log('find err', err);
+      // console.log('find user', user[0]);
+      if(err) return promise.fail(err);
+      if(user) {
+        // req.user = user[0];
+        return promise.fulfill(user[0]);
+      }
+
+      mongoDB.add(googleUser, function(err, createdUser){
+        // console.log('add err', err);
+        // console.log('add user', createdUser);
+        if(err) return promise.fail(err);
+        if(createdUser) {
+          // req.user = createdUser;
+          return promise.fulfill(createdUser);              
+        }
+      });
+    });  
+    // console.log('return test promise');
+    promise.fulfill('test');
+    return promise; 
   })
   .redirectPath('/#/authenticated');
